@@ -6,6 +6,19 @@
  * are not necessarily exceptions.
  */
 sealed class ResultOf<T, F> {
+    val isSuccess get() = this is Success
+    val isFailure get() = this is Failure
+
+    /**
+     * Returns the success value if available, or null otherwise.
+     */
+    fun getOrNull() = (this as? Success)?.value
+
+    /**
+     * Returns the failure value is available, or null otherwise.
+     */
+    fun failureOrNull() = (this as? Failure)?.value
+
     /**
      * A successful result with the resulting [value].
      */

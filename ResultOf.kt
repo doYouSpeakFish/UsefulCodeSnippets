@@ -6,7 +6,14 @@
  * are not necessarily exceptions.
  */
 sealed class ResultOf<T, F> {
+    /**
+     * Convenience property for checking if this is a success result.
+     */
     val isSuccess get() = this is Success
+
+    /**
+     * Convenience property for checking if this is a failure result.
+     */
     val isFailure get() = this is Failure
 
     /**

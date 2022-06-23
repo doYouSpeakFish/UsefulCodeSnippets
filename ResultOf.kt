@@ -100,6 +100,19 @@ sealed class ResultOf<T, F> {
         is Failure -> transform(value)
         is Success -> this
     }
+
+    /**
+     * Combines the success result of this [ResultOf] with another [ResultOf] with the same
+     * failure type.
+     *
+     * If either of the input [ResultOf] instances are failures, the return value will be a failure
+     * wrapping the first failed result.
+     *
+     * To combine [ResultOf] instances with different error type, first call
+     * [ResultOf.mapFailure] on one or both of them to convert them to the same failure type.
+     */
+    fun <T1, R> combine(other: ResultOf<T1, F>, transform: (T, T1) -> R) =
+            combine(this, other, transform)
 }
 
 /**
@@ -112,4 +125,279 @@ fun <T, R> T.runOrCatch(block: T.() -> R): ResultOf<R, Throwable> {
     } catch (e: Throwable) {
         ResultOf.Failure(e)
     }
+}
+
+/**
+ * Combines the success results of a variable number of [ResultOf] instances that all have the same
+ * failure type.
+ *
+ * If any of the input [ResultOf] instances are failures, the return value will be a failure wrapping
+ * the first failed result.
+ *
+ * To combine [ResultOf] instances with different error type, first call
+ * [ResultOf.mapFailure] on one or both of them to convert them to the same failure type.
+ */
+fun <T, F, R> combine(
+        vararg results: ResultOf<T, F>,
+        transform: (List<T>) -> R
+): ResultOf<R, F> {
+    for (result in results) {
+        if (result is ResultOf.Failure) return ResultOf.Failure(result.value)
+    }
+    val values = results.map { (it as ResultOf.Success).value }
+    return ResultOf.Success(transform(values))
+}
+
+/**
+ * Combines the success results of two [ResultOf] instances that have the same failure type.
+ *
+ * If either of the input [ResultOf] instances are failures, the return value will be a failure
+ * wrapping the first failed result.
+ *
+ * To combine [ResultOf] instances with different error type, first call [ResultOf.mapFailure] on
+ * one or both of them to convert them to the same failure type.
+ */
+@Suppress("UNCHECKED_CAST")
+fun <T1, T2, R, F> combine(
+        result1: ResultOf<T1, F>,
+        result2: ResultOf<T2, F>,
+        transform: (T1, T2) -> R
+): ResultOf<R, F> = combine(
+        result1.map { it as Any },
+        result2.map { it as Any }
+) { values ->
+    transform(
+            values[0] as T1,
+            values[1] as T2,
+    )
+}
+
+/**
+ * Combines the success result of three [ResultOf] instances that all have the same failure type.
+ *
+ * If any of the input [ResultOf] instances are failures, the return value will be a failure wrapping
+ * the first failed result.
+ *
+ * To combine [ResultOf] instances with different error type, first call [ResultOf.mapFailure] on
+ * one or both of them to convert them to the same failure type.
+ */
+@Suppress("UNCHECKED_CAST")
+fun <T1, T2, T3, R, F> combine(
+        result1: ResultOf<T1, F>,
+        result2: ResultOf<T2, F>,
+        result3: ResultOf<T3, F>,
+        transform: (T1, T2, T3) -> R
+): ResultOf<R, F> = combine(
+        result1.map { it as Any },
+        result2.map { it as Any },
+        result3.map { it as Any }
+) { values ->
+    transform(
+            values[0] as T1,
+            values[1] as T2,
+            values[2] as T3
+    )
+}
+
+/**
+ * Combines the success result of four [ResultOf] instances that all have the same failure type.
+ *
+ * If any of the input [ResultOf] instances are failures, the return value will be a failure wrapping
+ * the first failed result.
+ *
+ * To combine [ResultOf] instances with different error type, first call [ResultOf.mapFailure] on
+ * one or both of them to convert them to the same failure type.
+ */
+@Suppress("UNCHECKED_CAST")
+fun <T1, T2, T3, T4, R, F> combine(
+        result1: ResultOf<T1, F>,
+        result2: ResultOf<T2, F>,
+        result3: ResultOf<T3, F>,
+        result4: ResultOf<T4, F>,
+        transform: (T1, T2, T3, T4) -> R
+): ResultOf<R, F> = combine(
+        result1.map { it as Any },
+        result2.map { it as Any },
+        result3.map { it as Any },
+        result4.map { it as Any }
+) { values ->
+    transform(
+            values[0] as T1,
+            values[1] as T2,
+            values[2] as T3,
+            values[3] as T4
+    )
+}
+
+/**
+ * Combines the success result of five [ResultOf] instances that all have the same failure type.
+ *
+ * If any of the input [ResultOf] instances are failures, the return value will be a failure wrapping
+ * the first failed result.
+ *
+ * To combine [ResultOf] instances with different error type, first call [ResultOf.mapFailure] on
+ * one or both of them to convert them to the same failure type.
+ */
+@Suppress("UNCHECKED_CAST")
+fun <T1, T2, T3, T4, T5, R, F> combine(
+        result1: ResultOf<T1, F>,
+        result2: ResultOf<T2, F>,
+        result3: ResultOf<T3, F>,
+        result4: ResultOf<T4, F>,
+        result5: ResultOf<T5, F>,
+        transform: (T1, T2, T3, T4, T5) -> R
+): ResultOf<R, F> = combine(
+        result1.map { it as Any },
+        result2.map { it as Any },
+        result3.map { it as Any },
+        result4.map { it as Any },
+        result5.map { it as Any }
+) { values ->
+    transform(
+            values[0] as T1,
+            values[1] as T2,
+            values[2] as T3,
+            values[3] as T4,
+            values[4] as T5
+    )
+}
+
+/**
+ * Combines the success result of a variable number of [ResultOf] instances that all have the same
+ * failure type. Applies [transform] to the list of results to get another [ResultOf] that is then
+ * returned.
+ *
+ * If any of the input [ResultOf] instances are failures, the return value will be a failure wrapping
+ * the first failed result.
+ *
+ * To combine [ResultOf] instances with different error type, first call [ResultOf.mapFailure] on
+ * one or both of them to convert them to the same failure type.
+ */
+fun <T, F, R> flatCombine(
+        vararg results: ResultOf<T, F>,
+        transform: (List<T>) -> ResultOf<R, F>
+): ResultOf<R, F> {
+    for (result in results) {
+        if (result is ResultOf.Failure) return ResultOf.Failure(result.value)
+    }
+    val values = results.map { (it as ResultOf.Success).value }
+    return transform(values)
+}
+
+/**
+ * Combines the success results of two [ResultOf] instances that all have the same failure type.
+ * Applies [transform] to the list of results to get another [ResultOf] that is then returned.
+ *
+ * If either of the input [ResultOf] instances are failures, the return value will be a [ResultOf]
+ * wrapping the first failure value.
+ *
+ * To combine [ResultOf] instances with different error type, first call [ResultOf.mapFailure] on
+ * one or both of them to convert them to the same failure type.
+ */
+@Suppress("UNCHECKED_CAST")
+fun <T1, T2, R, F> flatCombine(
+        result1: ResultOf<T1, F>,
+        result2: ResultOf<T2, F>,
+        transform: (T1, T2) -> ResultOf<R, F>
+): ResultOf<R, F> = flatCombine(
+        result1.map { it as Any },
+        result2.map { it as Any }
+) { values ->
+    transform(
+            values[0] as T1,
+            values[1] as T2,
+    )
+}
+
+/**
+ * Combines the success results of three [ResultOf] instances that all have the same failure type.
+ * Applies [transform] to the list of results to get another [ResultOf] that is then returned.
+ *
+ * If any of the input [ResultOf] instances are failures, the return value will be a [ResultOf]
+ * wrapping the first failure value.
+ *
+ * To combine [ResultOf] instances with different error type, first call [ResultOf.mapFailure] on
+ * one or both of them to convert them to the same failure type.
+ */
+@Suppress("UNCHECKED_CAST")
+fun <T1, T2, T3, R, F> flatCombine(
+        result1: ResultOf<T1, F>,
+        result2: ResultOf<T2, F>,
+        result3: ResultOf<T3, F>,
+        transform: (T1, T2, T3) -> ResultOf<R, F>
+): ResultOf<R, F> = flatCombine(
+        result1.map { it as Any },
+        result2.map { it as Any },
+        result3.map { it as Any }
+) { values ->
+    transform(
+            values[0] as T1,
+            values[1] as T2,
+            values[2] as T3
+    )
+}
+
+/**
+ * Combines the success results of four [ResultOf] instances that all have the same failure type.
+ * Applies [transform] to the list of results to get another [ResultOf] that is then returned.
+ *
+ * If any of the input [ResultOf] instances are failures, the return value will be a [ResultOf]
+ * wrapping the first failure value.
+ *
+ * To combine [ResultOf] instances with different error type, first call [ResultOf.mapFailure] on
+ * one or both of them to convert them to the same failure type.
+ */
+@Suppress("UNCHECKED_CAST")
+fun <T1, T2, T3, T4, R, F> flatCombine(
+        result1: ResultOf<T1, F>,
+        result2: ResultOf<T2, F>,
+        result3: ResultOf<T3, F>,
+        result4: ResultOf<T4, F>,
+        transform: (T1, T2, T3, T4) -> ResultOf<R, F>
+): ResultOf<R, F> = flatCombine(
+        result1.map { it as Any },
+        result2.map { it as Any },
+        result3.map { it as Any },
+        result4.map { it as Any },
+) { values ->
+    transform(
+            values[0] as T1,
+            values[1] as T2,
+            values[2] as T3,
+            values[3] as T4
+    )
+}
+
+/**
+ * Combines the success results of five [ResultOf] instances that all have the same failure type.
+ * Applies [transform] to the list of results to get another [ResultOf] that is then returned.
+ *
+ * If any of the input [ResultOf] instances are failures, the return value will be a [ResultOf]
+ * wrapping the first failure value.
+ *
+ * To combine [ResultOf] instances with different error type, first call [ResultOf.mapFailure] on
+ * one or both of them to convert them to the same failure type.
+ */
+@Suppress("UNCHECKED_CAST")
+fun <T1, T2, T3, T4, T5, R, F> flatCombine(
+        result1: ResultOf<T1, F>,
+        result2: ResultOf<T2, F>,
+        result3: ResultOf<T3, F>,
+        result4: ResultOf<T4, F>,
+        result5: ResultOf<T5, F>,
+        transform: (T1, T2, T3, T4, T5) -> ResultOf<R, F>
+): ResultOf<R, F> = flatCombine(
+        result1.map { it as Any },
+        result2.map { it as Any },
+        result3.map { it as Any },
+        result4.map { it as Any },
+        result5.map { it as Any }
+) { values ->
+    transform(
+            values[0] as T1,
+            values[1] as T2,
+            values[2] as T3,
+            values[3] as T4,
+            values[4] as T5
+    )
 }

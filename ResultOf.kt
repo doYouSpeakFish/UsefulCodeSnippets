@@ -49,7 +49,7 @@ sealed class ResultOf<T, F> {
      * If this is a [ResultOf.Success], maps the success value to a new value.
      * If this is a [ResultOf.Failure], the failure value remains unchanged.
      */
-    fun <R> mapSuccess(transform: (T) -> R): ResultOf<R, F> = when (this) {
+    fun <R> map(transform: (T) -> R): ResultOf<R, F> = when (this) {
         is Success -> Success(transform(value))
         is Failure -> Failure(value)
     }
@@ -68,7 +68,7 @@ sealed class ResultOf<T, F> {
      * If this is a [ResultOf.Success], the result of [transform] is returned directly.
      * If this is a [ResultOf.Failure], the failure value remains unchanged.
      */
-    fun <R> flatMapSuccess(transform: (T) -> ResultOf<R, F>): ResultOf<R, F> = when (this) {
+    fun <R> flatMap(transform: (T) -> ResultOf<R, F>): ResultOf<R, F> = when (this) {
         is Success -> transform(value)
         is Failure -> Failure(value)
     }
